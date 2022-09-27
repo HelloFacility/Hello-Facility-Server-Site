@@ -34,6 +34,7 @@ async function run() {
   try {
     await client.connect();
     const userCollection = client.db('HelloFacility').collection('User')
+    const newAddressCollection = client.db('HelloFacility').collection('Address')
 
 
     // GET ALL USER
@@ -42,7 +43,7 @@ async function run() {
       res.send(users)
     })
 
-    // GET CREATE USER EMAIL
+    // Put CREATE USER EMAIL
     app.put('/user/:email', async (req, res) => {
       const email = req.params.email
       const user = req.body
@@ -57,11 +58,63 @@ async function run() {
       res.send({ result, token })
     })
 
+    // Post Add New Address
+    app.post('/newAddress', async (req, res) => {
+      const newAddress = req.body
+      console.log('add', newAddress)
+      const Address = await newAddressCollection.insertOne(newAddress)
+      res.send(Address)
+    })
 
+    // Get Add New Address
+    app.get("/newAddress", async (req, res) => {
+      const query = {};
+      const result = await newAddressCollection.find(query).toArray();
+      res.send(result);
+    });
 
+    // Put Edit Address
+    // app.put("/newAddress/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const { EditAddress } = req.body;
+    //   const filter = { _id: ObjectId(id) };
+    //   const options = { upsert: true };
+    //   const updateDoc = {
+    //     $set: {
+    //       EditAddress,
+    //     },
+    //   };
+    //   const result = await newAddressCollection.updateOne(
+    //     filter,
+    //     updateDoc,
+    //     options
+    //   );
+    //   res.send(result);
+    // });
 
-
-
+    app.put("/newAddress/:id", async (req, res) => {
+      const id = req.params.id;
+      const EditAddress = req.body;
+      const { name, phone, city, area, shortAddress, fullAddress } = EditAddress;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          name,
+          phone,
+          city,
+          area,
+          shortAddress,
+          fullAddress,
+        },
+      };
+      const result = await newAddressCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
   }
   finally {
 
