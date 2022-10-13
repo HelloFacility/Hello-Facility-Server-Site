@@ -35,6 +35,7 @@ async function run() {
     await client.connect();
     const userCollection = client.db('HelloFacility').collection('User')
     const newAddressCollection = client.db('HelloFacility').collection('Address')
+    const newOrderCollection = client.db('HelloFacility').collection('Order')
 
 
     // GET ALL USER
@@ -74,23 +75,6 @@ async function run() {
     });
 
     // Put Edit Address
-    // app.put("/newAddress/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const { EditAddress } = req.body;
-    //   const filter = { _id: ObjectId(id) };
-    //   const options = { upsert: true };
-    //   const updateDoc = {
-    //     $set: {
-    //       EditAddress,
-    //     },
-    //   };
-    //   const result = await newAddressCollection.updateOne(
-    //     filter,
-    //     updateDoc,
-    //     options
-    //   );
-    //   res.send(result);
-    // });
 
     app.put("/newAddress/:id", async (req, res) => {
       const id = req.params.id;
@@ -115,6 +99,55 @@ async function run() {
       );
       res.send(result);
     });
+
+
+    // Post Add Cleaning Service Order
+    app.post('/cleaningServiceOrder', async (req, res) => {
+      const newOrder = req.body
+      console.log('add', newOrder)
+      const Address = await newOrderCollection.insertOne(newOrder)
+      res.send(Address)
+    })
+
+    // GetCleaning Service Order
+    app.get("/cleaningServiceOrder", async (req, res) => {
+      const query = {};
+      const result = await newOrderCollection.find(query).toArray();
+      res.send(result);
+    });
+
+
+    // Update Order Status
+    app.put("/updateOrderStatus/:id", async (req, res) => {
+      const id = req.params.id;
+      const updateStatus = req.body;
+      const { orderStatus } = updateStatus;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          orderStatus
+        },
+      };
+      const result = await newOrderCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
+
+    // Get My Order (Customer)
+
+    app.get('/cleaningServiceOrder/:email', async (req, res) => {
+      const email = req.query.email
+      const query = { email: email }
+      const cursor = newOrderCollection.find(query)
+      const order = await cursor.toArray()
+      res.send(order)
+    })
+
+
   }
   finally {
 
