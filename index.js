@@ -44,6 +44,18 @@ async function run() {
       res.send(users)
     })
 
+
+    // MAKE AN ADMIN
+    app.put('/user/admin/:email', async (req, res) => {
+      const email = req.params.email
+      const filter = { email: email }
+      const updateDoc = {
+        $set: { role: 'admin' },
+      };
+      const result = await userCollection.updateOne(filter, updateDoc)
+      res.send(result)
+    })
+
     // Put CREATE USER EMAIL
     app.put('/user/:email', async (req, res) => {
       const email = req.params.email
@@ -58,6 +70,32 @@ async function run() {
       console.log(token, process.env.ACCESS_TOKEN_SECRET);
       res.send({ result, token })
     })
+
+
+    // ADMIN CHECK FOR REQUIRE ADMIN
+    app.get('/admin/:email', async (req, res) => {
+      const email = req.params.email;
+      const user = await userCollection.findOne({ email: email });
+      const isAdmin = user.role === 'admin';
+      res.send({ admin: isAdmin })
+    })
+
+    // CUSTOMER CHECK FOR REQUIRE CUSTOMER
+    app.get('/customer/:email', async (req, res) => {
+      const email = req.params.email;
+      const user = await userCollection.findOne({ email: email });
+      const isCustomer = user.role !== 'admin';
+      res.send({ customer: isCustomer })
+    })
+
+    // Delete user
+    app.delete('/user/:email', async (req, res) => {
+      const email = req.params.email;
+      const user = await userCollection.deleteOne({ email: email })
+      // const users = await userCollection.find().toArray()
+      res.send(user)
+    })
+
 
     // Post Add New Address
     app.post('/newAddress', async (req, res) => {
